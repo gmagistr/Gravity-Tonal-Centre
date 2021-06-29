@@ -1,0 +1,133 @@
+!pip install praat-parselmouth
+import glob
+import numpy as np
+import pandas as pd
+import parselmouth
+from google.colab import drive
+import math
+
+
+
+from parselmouth.praat import call
+def measurePitch(voiceID, f0min, f0max, unit):
+    sound = parselmouth.Sound(voiceID)
+    duration = call(sound, "Get total duration")
+    pezzettino = duration/10
+    tempo0 = 0 
+    tempo1= pezzettino
+    tempo2 = pezzettino*2
+    tempo3 = pezzettino*3
+    tempo4 = pezzettino*4
+    tempo5 = pezzettino*5 
+    tempo6= pezzettino*6
+    tempo7 = pezzettino*7 
+    tempo8= pezzettino*8
+    tempo9 = pezzettino*9 
+    tempo10 = pezzettino*10
+    pitchObject = call(sound, "To Pitch", 0.0, 25, 350)
+    pitch0 = call(pitchObject, "Get value at time", tempo0, "Hertz", "linear") 
+    while math.isnan(pitch0):
+      tempo0 = tempo0 + 0.01
+      pitch0 = call(pitchObject, "Get value at time", tempo0, "Hertz", "linear")
+      continue 
+    pitch1 = call(pitchObject, "Get value at time", tempo1, "Hertz", "linear") 
+    while math.isnan(pitch1):
+      tempo1 = tempo1 + 0.01
+      pitch1 = call(pitchObject, "Get value at time", tempo1, "Hertz", "linear")
+      continue 
+    pitch2 = call(pitchObject, "Get value at time", tempo2, "Hertz", "linear" )
+    while math.isnan(pitch2):
+      tempo2 = tempo2 + 0.01
+      pitch2 = call(pitchObject, "Get value at time", tempo2, "Hertz", "linear")
+      continue 
+    pitch3 = call(pitchObject, "Get value at time", tempo3, "Hertz", "linear")
+    while math.isnan(pitch3):
+     tempo3 = tempo3 + 0.01
+     pitch3 = call(pitchObject, "Get value at time", tempo3, "Hertz", "linear")
+     continue 
+    pitch4 = call(pitchObject, "Get value at time", tempo4, "Hertz", "linear")
+    while math.isnan(pitch4):
+     tempo4 = tempo4 + 0.01
+     pitch4 = call(pitchObject, "Get value at time", tempo4, "Hertz", "linear")
+     continue 
+    pitch5 = call(pitchObject, "Get value at time", tempo5, "Hertz", "linear")
+    while math.isnan(pitch5):
+      tempo5 = tempo5 - 0.01
+      pitch5 = call(pitchObject, "Get value at time", tempo5, "Hertz", "linear")
+      continue 
+    pitch6 = call(pitchObject, "Get value at time", tempo6, "Hertz", "linear")
+    while math.isnan(pitch6):
+     tempo6 = tempo6 - 0.01
+     pitch6 = call(pitchObject, "Get value at time", tempo6, "Hertz", "linear")
+     continue 
+    pitch7 = call(pitchObject, "Get value at time", tempo7, "Hertz", "linear")
+    while math.isnan(pitch7):
+      tempo7 = tempo7 - 0.01
+      pitch7 = call(pitchObject, "Get value at time", tempo7, "Hertz", "linear")
+      continue 
+    pitch8 = call(pitchObject, "Get value at time", tempo8, "Hertz", "linear")
+    while math.isnan(pitch8):
+     tempo8 = tempo8 - 0.01
+     pitch8 = call(pitchObject, "Get value at time", tempo8, "Hertz", "linear")
+     continue 
+    pitch9 = call(pitchObject, "Get value at time", tempo9, "Hertz", "linear")
+    while math.isnan(pitch9):
+     tempo9 = tempo9 - 0.01
+     pitch9 = call(pitchObject, "Get value at time", tempo9, "Hertz", "linear")
+     continue 
+    pitch10 = call(pitchObject, "Get value at time", tempo10, "Hertz", "linear")
+    while math.isnan(pitch10):
+     tempo10 = tempo10 - 0.01
+     pitch10 = call(pitchObject, "Get value at time", tempo10, "Hertz", "linear")
+     continue 
+    TCOG = (pitch0*tempo0+ pitch1*tempo1 + pitch2*tempo2+pitch3*tempo3+ pitch4*tempo4+pitch5*tempo5+pitch6*tempo6+pitch7*tempo7+pitch8*tempo8+pitch9*tempo9+pitch10*tempo10) /(pitch0+pitch1+pitch2+pitch3+pitch4+pitch5+pitch6+pitch7+pitch8+pitch9+pitch10)
+    duration = call(sound, "Get total duration")
+    TCOGn = TCOG/duration
+    
+    return pitch0, pitch1, pitch2, pitch3, pitch4, pitch5, pitch6, pitch7, pitch8, pitch9, pitch10, duration, TCOG, TCOGn
+ 
+file_list = []
+f0_0 = []
+f0_1 = []
+f0_2 = []
+f0_3 = []
+f0_4 = []
+f0_5 = []
+f0_6= []
+f0_7 = []
+f0_8 = []
+f0_9 = []
+f0_10 = []
+length = []
+tonal_centre= []
+tonal_centre_n = []
+
+for wave_file in glob.glob('*.wav'): # insert here the path where your audio files are stored
+    sound = parselmouth.Sound(wave_file)
+    ( pitch0, pitch1, pitch2, pitch3, pitch4, pitch5, pitch6, pitch7, pitch8, pitch9, pitch10,duration, TCOG, TCOGn) = measurePitch(sound, 40, 350, "Hertz") # adjust according to the pitch points, the second part 
+# sets the floor, ceiling and unit
+    file_list.append(wave_file)
+    f0_0.append(pitch0)
+    f0_1.append(pitch1)
+    f0_2.append(pitch2)
+    f0_3.append(pitch3)
+    f0_4.append(pitch4)
+    f0_5.append(pitch5)
+    f0_6.append(pitch6)
+    f0_7.append(pitch7)
+    f0_8.append(pitch8)
+    f0_9.append(pitch9)
+    f0_10.append(pitch10)
+    length.append(duration)
+    tonal_centre.append(TCOG)
+    tonal_centre_n.append(TCOGn)
+    
+    
+df = pd.DataFrame(np.column_stack([file_list, f0_0, f0_1, f0_2, f0_3, f0_4, f0_5, f0_6, f0_7, f0_8, f0_9, f0_10, length, tonal_centre, tonal_centre_n]), # adjust
+                               columns=['file', 'zero', 'primo', 'secondo', 'terzo', 'quarto', 'quinto', 'sesto',
+                                        'settimo', 'ottavo', 'nono', 'decimo', 'duration', 'TCOG', 'TCOGn']) # adjust
+df = df[['file', 'duration', 'TCOG', 'TCOGn']]
+
+df.to_csv("cf_TCOG.csv", index=False) # your .csv is named processed_results .csv
+df
+
